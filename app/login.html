@@ -46,7 +46,7 @@
       try {
         await signInWithEmailAndPassword(auth, email, password);
         // Login ok → redireciona
-        window.location.href = "/app/dashboard.html";
+        window.location.href = "/simulador-imob/app/dashboard.html";
       } catch (err) {
         errorEl.textContent = "E-mail ou senha inválidos.";
       }
