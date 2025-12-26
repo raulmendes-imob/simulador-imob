@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cadastro | Simulador Imob</title>
+</head>
+<body>
+
+  <h1>Cadastro com código</h1>
+
+  <form id="registerForm">
+    <div>
+      <label>E-mail</label><br />
+      <input type="email" id="email" required />
+    </div>
+
+    <div>
+      <label>Senha</label><br />
+      <input type="password" id="password" required />
+    </div>
+
+    <div>
+      <label>Código de acesso</label><br />
+      <input type="text" id="code" required />
+    </div>
+
+    <button type="submit">Criar conta</button>
+  </form>
+
+  <p id="error" style="color:red;"></p>
+
+  <!-- Firebase -->
+  <script type="module" src="/simulador-imob/app/js/firebase.js"></script>
+
+</body>
+</html>
