@@ -35,13 +35,21 @@
 
   <p id="error" style="color:red;"></p>
 
-  <!-- Firebase (configuração) -->
+  <!-- Firebase -->
   <script type="module" src="/simulador-imob/app/js/firebase.js"></script>
 
   <!-- Lógica do cadastro -->
   <script type="module">
-    import { doc, getDoc } from
-      "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import {
+      doc,
+      getDoc,
+      updateDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    import {
+      createUserWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const form = document.getElementById("registerForm");
     const errorEl = document.getElementById("error");
@@ -61,8 +69,9 @@
 
       try {
         const db = window.firebaseDb;
+        const auth = window.firebaseAuth;
 
-        // 🔍 Busca o código no Firestore
+        // 1️⃣ Validar código
         const inviteRef = doc(db, "invites", code);
         const inviteSnap = await getDoc(inviteRef);
 
@@ -83,12 +92,32 @@
           return;
         }
 
-        // ✅ Código válido (por enquanto)
-        alert("Código válido! No próximo passo vamos criar o usuário.");
+        // 2️⃣ Criar usuário no Auth
+        const userCredential =
+          await createUserWithEmailAndPassword(auth, email, password);
+
+        const user = userCredential.user;
+
+        // 3️⃣ Marcar código como usado
+        await updateDoc(inviteRef, {
+          used: true,
+          emailBound: email,
+          usedAt: serverTimestamp()
+        });
+
+        // 4️⃣ Redirecionar
+        window.location.href = "/simulador-imob/app/dashboard.html";
 
       } catch (err) {
         console.error(err);
-        errorEl.textContent = "Erro ao validar o código.";
+
+        if (err.code === "auth/email-already-in-use") {
+          errorEl.textContent = "Este e-mail já está cadastrado.";
+        } else if (err.code === "auth/weak-password") {
+          errorEl.textContent = "A senha deve ter pelo menos 6 caracteres.";
+        } else {
+          errorEl.textContent = "Erro ao criar conta.";
+        }
       }
     });
   </script>
