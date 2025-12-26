@@ -2,10 +2,56 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Login</title>
+  <title>Login | Simulador Imob</title>
 </head>
 <body>
+
   <h1>Login</h1>
-  <p>Página de login (área restrita).</p>
+
+  <form id="loginForm">
+    <div>
+      <label for="email">E-mail</label><br />
+      <input type="email" id="email" required />
+    </div>
+
+    <div>
+      <label for="password">Senha</label><br />
+      <input type="password" id="password" required />
+    </div>
+
+    <button type="submit">Entrar</button>
+  </form>
+
+  <p id="error" style="color: red;"></p>
+
+  <!-- Firebase (conexão) -->
+  <script type="module" src="/app/js/firebase.js"></script>
+
+  <!-- Login logic -->
+  <script type="module">
+    import { signInWithEmailAndPassword } from
+      "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const auth = window.firebaseAuth;
+
+    const form = document.getElementById("loginForm");
+    const errorEl = document.getElementById("error");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        // Login ok → redireciona
+        window.location.href = "/app/dashboard.html";
+      } catch (err) {
+        errorEl.textContent = "E-mail ou senha inválidos.";
+      }
+    });
+  </script>
+
 </body>
 </html>
