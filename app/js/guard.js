@@ -9,7 +9,7 @@ const auth = window.firebaseAuth;
 onAuthStateChanged(auth, (user) => {
   if (!user) {
     // Usuário não logado → volta para login
-    window.location.href = "/app/login.html";
+   window.location.href = "/simulador-imob/app/login.html";
   }
   // Se estiver logado, segue normalmente
 });
