@@ -22,29 +22,16 @@
     <button type="submit">Entrar</button>
   </form>
 
-  <!-- Mensagens de erro / status -->
   <p id="error" style="color: red;"></p>
 
-  <!-- 🔑 Esqueci minha senha -->
   <p>
     <a href="/simulador-imob/app/reset-password.html">
       Esqueci minha senha
     </a>
   </p>
 
-  <!-- Firebase (conexão) -->
+  <!-- Firebase -->
   <script type="module" src="/simulador-imob/app/js/firebase.js"></script>
-
-  <!-- Mensagem de acesso expirado -->
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const errorEl = document.getElementById("error");
-
-    if (params.get("expired") === "1") {
-      errorEl.textContent =
-        "Seu acesso expirou. Entre em contato para renovação.";
-    }
-  </script>
 
   <!-- Login logic -->
   <script type="module">
@@ -54,6 +41,19 @@
     const auth = window.firebaseAuth;
     const form = document.getElementById("loginForm");
     const errorEl = document.getElementById("error");
+
+    // 🔎 Verifica parâmetros da URL
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get("expired") === "1") {
+      errorEl.textContent =
+        "Seu acesso expirou. Entre em contato para renovar.";
+    }
+
+    if (params.get("suspended") === "1") {
+      errorEl.textContent =
+        "Sua conta está suspensa. Entre em contato com o suporte.";
+    }
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
