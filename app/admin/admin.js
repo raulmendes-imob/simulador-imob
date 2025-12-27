@@ -33,7 +33,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   adminEmailEl.textContent = `Logado como: ${user.email}`;
-  loadUsers();
+  await loadUsers();
 });
 
 /* =========================
@@ -45,44 +45,53 @@ async function loadUsers() {
   const usersSnap = await getDocs(collection(db, "users"));
   const now = new Date();
 
-  usersSnap.forEach(docSnap => {
+  usersSnap.forEach((docSnap) => {
     const u = docSnap.data();
 
     let situation = "Ativo";
-    let actionHtml = "-";
+    let actions = [];
 
-    if (u.status !== "active") {
+    if (u.status === "suspended") {
       situation = "Suspenso";
+      actions.push(`<button data-action="reactivate" data-id="${docSnap.id}">Reativar</button>`);
     } else if (u.accessUntil.toDate() < now) {
       situation = "Vencido";
-      actionHtml = `<button data-id="${docSnap.id}">Renovar acesso</button>`;
+      actions.push(`<button data-action="renew" data-id="${docSnap.id}">Renovar</button>`);
+      actions.push(`<button data-action="suspend" data-id="${docSnap.id}">Suspender</button>`);
+    } else {
+      actions.push(`<button data-action="suspend" data-id="${docSnap.id}">Suspender</button>`);
     }
 
     const tr = document.createElement("tr");
-
     tr.innerHTML = `
       <td>${u.email}</td>
       <td>${u.status}</td>
       <td>${u.accessUntil.toDate().toLocaleDateString()}</td>
       <td>${situation}</td>
-      <td>${actionHtml}</td>
+      <td>${actions.join(" ")}</td>
     `;
 
     tableBody.appendChild(tr);
 
-    if (situation === "Vencido") {
-      const btn = tr.querySelector("button");
-      btn.addEventListener("click", () => renewAccess(docSnap.id));
-    }
+    tr.querySelectorAll("button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const action = btn.dataset.action;
+        const userId = btn.dataset.id;
+
+        if (action === "renew") renewAccess(userId);
+        if (action === "suspend") suspendUser(userId);
+        if (action === "reactivate") reactivateUser(userId);
+      });
+    });
   });
 }
 
 /* =========================
-   RENEW ACCESS (1 YEAR)
+   ACTIONS
    ========================= */
+
 async function renewAccess(userId) {
-  const confirmRenew = confirm("Renovar acesso por mais 1 ano?");
-  if (!confirmRenew) return;
+  if (!confirm("Renovar acesso por mais 1 ano?")) return;
 
   const now = new Date();
   const oneYearLater = new Date(
@@ -91,10 +100,28 @@ async function renewAccess(userId) {
     now.getDate()
   );
 
-  const userRef = doc(db, "users", userId);
-
-  await updateDoc(userRef, {
+  await updateDoc(doc(db, "users", userId), {
     accessUntil: Timestamp.fromDate(oneYearLater),
+    status: "active"
+  });
+
+  await loadUsers();
+}
+
+async function suspendUser(userId) {
+  if (!confirm("Suspender este usuário?")) return;
+
+  await updateDoc(doc(db, "users", userId), {
+    status: "suspended"
+  });
+
+  await loadUsers();
+}
+
+async function reactivateUser(userId) {
+  if (!confirm("Reativar este usuário?")) return;
+
+  await updateDoc(doc(db, "users", userId), {
     status: "active"
   });
 
