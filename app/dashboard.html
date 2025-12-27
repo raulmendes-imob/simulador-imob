@@ -7,6 +7,18 @@
 <body>
 
   <h1>Área logada</h1>
+
+  <!-- 🔔 AVISO DE VENCIMENTO -->
+  <div id="accessWarning"
+       style="display:none;
+              padding:12px;
+              margin-bottom:16px;
+              border:1px solid orange;
+              background:#fff3cd;
+              color:#856404;
+              font-weight:bold;">
+  </div>
+
   <p>Se você está vendo isso, está autenticado.</p>
 
   <button id="logoutBtn">Sair</button>
@@ -17,15 +29,48 @@
   <!-- Guard (proteção) -->
   <script type="module" src="/simulador-imob/app/js/guard.js"></script>
 
-  <!-- Logout -->
+  <!-- Dashboard logic (aviso + logout) -->
   <script type="module">
-    import { signOut } from
+    import { onAuthStateChanged, signOut } from
       "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    const auth = window.firebaseAuth;
-    const btn = document.getElementById("logoutBtn");
+    import {
+      doc,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    btn.addEventListener("click", async () => {
+    const auth = window.firebaseAuth;
+    const db = window.firebaseDb;
+
+    const warningEl = document.getElementById("accessWarning");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return;
+
+      const userRef = doc(db, "users", user.uid);
+      const snap = await getDoc(userRef);
+
+      if (!snap.exists()) return;
+
+      const data = snap.data();
+      const accessUntil = data.accessUntil.toDate();
+      const now = new Date();
+
+      const diffMs = accessUntil - now;
+      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+      // 🔔 Mostrar aviso se faltar 7 dias ou menos
+      if (diffDays > 0 && diffDays <= 7) {
+        warningEl.style.display = "block";
+        warningEl.textContent =
+          `⚠️ Atenção: seu acesso vence em ${diffDays} dia(s). 
+           Entre em contato para evitar bloqueio.`;
+      }
+    });
+
+    // Logout
+    logoutBtn.addEventListener("click", async () => {
       await signOut(auth);
       window.location.href = "/simulador-imob/app/login.html";
     });
