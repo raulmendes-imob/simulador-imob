@@ -23,8 +23,7 @@ const logoutBtn = document.getElementById("logoutBtn");
 onAuthStateChanged(auth, async (user) => {
   if (!user) return;
 
-  const userRef = doc(db, "users", user.uid);
-  const snap = await getDoc(userRef);
+  const snap = await getDoc(doc(db, "users", user.uid));
 
   if (!snap.exists() || snap.data().role !== "admin") {
     await signOut(auth);
@@ -48,17 +47,28 @@ async function loadUsers() {
   usersSnap.forEach((docSnap) => {
     const u = docSnap.data();
 
+    const accessUntil = u.accessUntil.toDate();
+    const diffMs = accessUntil - now;
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
     let situation = "Ativo";
     let actions = [];
+    let daysLabel = diffDays;
+
+    if (diffDays < 0) {
+      daysLabel = "Vencido";
+    }
 
     if (u.status === "suspended") {
       situation = "Suspenso";
       actions.push(`<button data-action="reactivate" data-id="${docSnap.id}">Reativar</button>`);
-    } else if (u.accessUntil.toDate() < now) {
+    } 
+    else if (diffDays < 0) {
       situation = "Vencido";
       actions.push(`<button data-action="renew" data-id="${docSnap.id}">Renovar</button>`);
       actions.push(`<button data-action="suspend" data-id="${docSnap.id}">Suspender</button>`);
-    } else {
+    } 
+    else {
       actions.push(`<button data-action="suspend" data-id="${docSnap.id}">Suspender</button>`);
     }
 
@@ -66,7 +76,8 @@ async function loadUsers() {
     tr.innerHTML = `
       <td>${u.email}</td>
       <td>${u.status}</td>
-      <td>${u.accessUntil.toDate().toLocaleDateString()}</td>
+      <td>${accessUntil.toLocaleDateString()}</td>
+      <td>${daysLabel}</td>
       <td>${situation}</td>
       <td>${actions.join(" ")}</td>
     `;
@@ -74,10 +85,10 @@ async function loadUsers() {
     tableBody.appendChild(tr);
 
     tr.querySelectorAll("button").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const action = btn.dataset.action;
-        const userId = btn.dataset.id;
+      const action = btn.dataset.action;
+      const userId = btn.dataset.id;
 
+      btn.addEventListener("click", () => {
         if (action === "renew") renewAccess(userId);
         if (action === "suspend") suspendUser(userId);
         if (action === "reactivate") reactivateUser(userId);
