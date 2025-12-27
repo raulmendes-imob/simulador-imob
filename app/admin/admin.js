@@ -51,23 +51,25 @@ async function loadUsers() {
     const diffMs = accessUntil - now;
     const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
+    // 🔢 Dias restantes (coluna correta)
+    let daysRemaining = diffDays;
+    if (diffDays < 0) {
+      daysRemaining = "Vencido";
+    }
+
+    // 📌 Situação
     let situation = "Ativo";
     let actions = [];
-    let daysLabel = diffDays;
-
-    if (diffDays < 0) {
-      daysLabel = "Vencido";
-    }
 
     if (u.status === "suspended") {
       situation = "Suspenso";
       actions.push(`<button data-action="reactivate" data-id="${docSnap.id}">Reativar</button>`);
-    } 
+    }
     else if (diffDays < 0) {
       situation = "Vencido";
       actions.push(`<button data-action="renew" data-id="${docSnap.id}">Renovar</button>`);
       actions.push(`<button data-action="suspend" data-id="${docSnap.id}">Suspender</button>`);
-    } 
+    }
     else {
       actions.push(`<button data-action="suspend" data-id="${docSnap.id}">Suspender</button>`);
     }
@@ -77,7 +79,7 @@ async function loadUsers() {
       <td>${u.email}</td>
       <td>${u.status}</td>
       <td>${accessUntil.toLocaleDateString()}</td>
-      <td>${daysLabel}</td>
+      <td>${daysRemaining}</td>
       <td>${situation}</td>
       <td>${actions.join(" ")}</td>
     `;
