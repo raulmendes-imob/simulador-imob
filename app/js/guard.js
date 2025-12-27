@@ -45,10 +45,12 @@ onAuthStateChanged(auth, async (user) => {
     const accessUntil = userData.accessUntil.toDate();
 
     if (accessUntil < now) {
-      await auth.signOut();
-      window.location.href = "/simulador-imob/app/login.html";
-      return;
-    }
+  await auth.signOut();
+  window.location.href =
+    "/simulador-imob/app/login.html?expired=1";
+  return;
+   }
+
 
     // ✅ Acesso válido → deixa seguir
 
