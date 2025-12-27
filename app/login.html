@@ -22,6 +22,7 @@
     <button type="submit">Entrar</button>
   </form>
 
+  <!-- Mensagens de erro / status -->
   <p id="error" style="color: red;"></p>
 
   <!-- 🔑 Esqueci minha senha -->
@@ -34,13 +35,23 @@
   <!-- Firebase (conexão) -->
   <script type="module" src="/simulador-imob/app/js/firebase.js"></script>
 
+  <!-- Mensagem de acesso expirado -->
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const errorEl = document.getElementById("error");
+
+    if (params.get("expired") === "1") {
+      errorEl.textContent =
+        "Seu acesso expirou. Entre em contato para renovação.";
+    }
+  </script>
+
   <!-- Login logic -->
   <script type="module">
     import { signInWithEmailAndPassword } from
       "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const auth = window.firebaseAuth;
-
     const form = document.getElementById("loginForm");
     const errorEl = document.getElementById("error");
 
