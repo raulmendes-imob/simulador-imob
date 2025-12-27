@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Painel Admin | Simulador Imob</title>
+</head>
+<body>
+
+  <h1>Painel Admin</h1>
+
+  <p id="adminEmail"></p>
+
+  <button id="logoutBtn">Sair</button>
+
+  <hr />
+
+  <h2>Usuários</h2>
+
+  <table border="1" cellpadding="8">
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Status</th>
+        <th>Validade</th>
+        <th>Situação</th>
+      </tr>
+    </thead>
+    <tbody id="usersTable"></tbody>
+  </table>
+
+  <!-- Firebase -->
+  <script type="module" src="/simulador-imob/app/js/firebase.js"></script>
+
+  <!-- Guard geral -->
+  <script type="module" src="/simulador-imob/app/js/guard.js"></script>
+
+  <!-- Admin logic -->
+  <script type="module" src="./admin.js"></script>
+
+</body>
+</html>
