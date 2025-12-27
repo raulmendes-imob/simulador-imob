@@ -12,10 +12,21 @@ import {
 const auth = window.firebaseAuth;
 const db = window.firebaseDb;
 
+// 🔁 Função centralizada de redirect
+function redirectToLogin(reason = "") {
+  const url = reason
+    ? `/simulador-imob/app/login.html?${reason}=1`
+    : `/simulador-imob/app/login.html`;
+
+  // replace evita histórico e loops
+  window.location.replace(url);
+}
+
 onAuthStateChanged(auth, async (user) => {
+
   // 1️⃣ Não logado
   if (!user) {
-    window.location.href = "/simulador-imob/app/login.html";
+    redirectToLogin();
     return;
   }
 
@@ -27,7 +38,7 @@ onAuthStateChanged(auth, async (user) => {
     // Documento não existe
     if (!userSnap.exists()) {
       await auth.signOut();
-      window.location.href = "/simulador-imob/app/login.html";
+      redirectToLogin();
       return;
     }
 
@@ -36,7 +47,7 @@ onAuthStateChanged(auth, async (user) => {
     // 3️⃣ Status inválido
     if (userData.status !== "active") {
       await auth.signOut();
-      window.location.href = "/simulador-imob/app/login.html";
+      redirectToLogin();
       return;
     }
 
@@ -45,18 +56,16 @@ onAuthStateChanged(auth, async (user) => {
     const accessUntil = userData.accessUntil.toDate();
 
     if (accessUntil < now) {
-  await auth.signOut();
-  window.location.href =
-    "/simulador-imob/app/login.html?expired=1";
-  return;
-   }
+      await auth.signOut();
+      redirectToLogin("expired");
+      return;
+    }
 
-
-    // ✅ Acesso válido → deixa seguir
+    // ✅ Acesso válido → segue normalmente
 
   } catch (err) {
     console.error("Erro no guard:", err);
     await auth.signOut();
-    window.location.href = "/simulador-imob/app/login.html";
+    redirectToLogin();
   }
 });
